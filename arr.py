@@ -150,6 +150,24 @@ for file_name in excel_files:
         risk_col = headers["Risk Level"]
 
         # =================================================
+        # FIND SR NO COLUMN
+        # =================================================
+
+        sr_no_col = None
+
+        for header_name, col_num in headers.items():
+
+            if str(header_name).strip().lower() in [
+                "sr. no",
+                "sr no",
+                "srno",
+                "serial number"
+            ]:
+
+                sr_no_col = col_num
+                break
+
+        # =================================================
         # READ DATA ROWS
         # =================================================
 
@@ -216,6 +234,7 @@ for file_name in excel_files:
         # =================================================
 
         current_row = header_row + 1
+        serial_number = 1
 
         for _, risk_value, row_data in data_rows:
 
@@ -226,28 +245,51 @@ for file_name in excel_files:
                     column=col_num
                 )
 
-                cell.value = value
-
                 # =========================================
-                # APPLY COLORS
+                # FIX SERIAL NUMBERING
                 # =========================================
 
-                if risk_value == "high":
+                if sr_no_col and col_num == sr_no_col:
 
-                    cell.fill = HIGH_FILL
-                    cell.font = BLACK_FONT
+                    cell.value = serial_number
 
-                elif risk_value == "medium":
+                else:
 
-                    cell.fill = MEDIUM_FILL
-                    cell.font = BLACK_FONT
+                    cell.value = value
 
-                elif risk_value == "low":
+                # =========================================
+                # RESET STYLE
+                # =========================================
 
-                    cell.fill = LOW_FILL
-                    cell.font = BLACK_FONT
+                cell.fill = PatternFill(fill_type=None)
+                cell.font = Font(color="000000")
+
+            # =============================================
+            # COLOR ONLY RISK LEVEL CELL
+            # =============================================
+
+            risk_cell = ws.cell(
+                row=current_row,
+                column=risk_col
+            )
+
+            if risk_value == "high":
+
+                risk_cell.fill = HIGH_FILL
+                risk_cell.font = BLACK_FONT
+
+            elif risk_value == "medium":
+
+                risk_cell.fill = MEDIUM_FILL
+                risk_cell.font = BLACK_FONT
+
+            elif risk_value == "low":
+
+                risk_cell.fill = LOW_FILL
+                risk_cell.font = BLACK_FONT
 
             current_row += 1
+            serial_number += 1
 
         # =================================================
         # SAVE FILE
